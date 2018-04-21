@@ -1,29 +1,40 @@
-class JobSchedule{
-	List<Job> jobSchedule="";
+import java.util.*;
+public class JobSchedule {
+List<Job> jobSchedule;
 	
 	public JobSchedule(){
-		jobList=new ArrayList<Job>();
+		jobSchedule=new ArrayList<Job>();
 	}
 
 	class Job{
-		Job previousJob="";
+		List<Job> previousJobs;
 		int time=0;
 		private Job(int time){
 			this.time=time;	
+			this.previousJobs=new ArrayList<Job>();
 		}
 		
 		//Sets a job to be completed first, to a job.
 		public void requires(Job j){
-			this.previousJob=j;
+			this.previousJobs.add(j);
 		}
 		
 		//checks if a job has any job requires to complete and calculates start time
 		public int getStartTime(){
 			int startTime=0;
+			int maxTime=0;
+			int index=0;
 			Job currentJob=this;
-			while(currentJob.previousJob!=null){
-				startTime=startTime+currentJob.previousJob.time;
-				currentJob=currentJob.previousJob;
+			while(currentJob.previousJobs.size()!=0){
+				//selecting the maximum time previous job
+				for(int i=0;i<previousJobs.size();i++){
+					if(previousJobs.get(i).time>maxTime){
+						maxTime=previousJobs.get(i).time;
+						index=i;
+					}
+				}
+				startTime=startTime+maxTime;
+				currentJob=currentJob.previousJobs.get(index);
 			}	
 			return startTime;
 		}	
@@ -37,7 +48,7 @@ class JobSchedule{
 			return j;
 		}	
 		else
-			return "";
+			return null;
 		
 	}
 	
@@ -51,13 +62,13 @@ class JobSchedule{
 		
 		int minTime=0;
 		
-		for(int i=0;i<jobSchedule.length;i++){
+		for(int i=0;i<jobSchedule.size();i++){
 			
 			int previousJobsTime=0;
 			int timeForAJob=0;
 			
 			//if a job has previousJob to be completed then get th`e time for previous jobs 
-			if(jobSchedule.get(i).previousJob!=null){
+			if(jobSchedule.get(i).previousJobs.size()!=0){
 				previousJobsTime=previousJobsTime+jobSchedule.get(i).getStartTime();
 			}
 			
@@ -71,5 +82,36 @@ class JobSchedule{
 		}
 		
 		return minTime;
+	}
+	public static void main(String args[]){
+		JobSchedule schedule = new JobSchedule();
+		schedule.addJob(8); //adds job 0 with time 8
+		JobSchedule.Job j1 = schedule.addJob(3); //adds job 1 with time 3
+		schedule.addJob(5); //adds job 2 with time 5
+		System.out.println(schedule.minCompletionTime()); //should return 8, since job 0 takes time 8 to complete.
+		
+		/* Note it is not the min completion time of any job, but the earliest the entire set can complete. */
+		schedule.getJob(0).requires(schedule.getJob(2)); //job 2 must precede job 0
+		System.out.println(schedule.minCompletionTime()); //should return 13 (job 0 cannot start until time 5)
+		
+		schedule.getJob(0).requires(j1); //job 1 must precede job 0
+		System.out.println(schedule.minCompletionTime()); //should return 13
+		
+		System.out.println(schedule.getJob(0).getStartTime()); //should return 5
+		System.out.println(j1.getStartTime()); //should return 0
+		
+		System.out.println(schedule.getJob(2).getStartTime()); //should return 0
+		j1.requires(schedule.getJob(2)); //job 2 must precede job 1
+        
+        System.out.println(schedule.minCompletionTime()); //should return 16
+		System.out.println(schedule.getJob(0).getStartTime()); //should return 8
+		System.out.println(schedule.getJob(1).getStartTime()); //should return 5
+		System.out.println(schedule.getJob(2).getStartTime()); //should return 0
+		schedule.getJob(1).requires(schedule.getJob(0)); //job 0 must precede job 1 (creates loop)
+		schedule.minCompletionTime(); //should return -1
+		schedule.getJob(0).getStartTime(); //should return -1
+		schedule.getJob(1).getStartTime(); //should return -1
+		schedule.getJob(2).getStartTime(); //should return 0 (no loops in prerequisites)
+		
 	}
 }
