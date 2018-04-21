@@ -1,0 +1,75 @@
+class JobSchedule{
+	List<Job> jobSchedule="";
+	
+	public JobSchedule(){
+		jobList=new ArrayList<Job>();
+	}
+
+	class Job{
+		Job previousJob="";
+		int time=0;
+		private Job(int time){
+			this.time=time;	
+		}
+		
+		//Sets a job to be completed first, to a job.
+		public void requires(Job j){
+			this.previousJob=j;
+		}
+		
+		//checks if a job has any job requires to complete and calculates start time
+		public int getStartTime(){
+			int startTime=0;
+			Job currentJob=this;
+			while(currentJob.previousJob!=null){
+				startTime=startTime+currentJob.previousJob.time;
+				currentJob=currentJob.previousJob;
+			}	
+			return startTime;
+		}	
+	}
+	
+	//creates a new job and adds to schedule.
+	public Job addJob(int time){
+		if(time>0){
+			JobSchedule.Job j=new JobSchedule.Job(time);
+			this.jobSchedule.add(j);
+			return j;
+		}	
+		else
+			return "";
+		
+	}
+	
+	//gets the job
+	public Job getJob(int index){
+		return this.jobSchedule.get(index);
+	}
+	
+	//returns minimum time for completion.
+	public int minCompletionTime(){
+		
+		int minTime=0;
+		
+		for(int i=0;i<jobSchedule.length;i++){
+			
+			int previousJobsTime=0;
+			int timeForAJob=0;
+			
+			//if a job has previousJob to be completed then get th`e time for previous jobs 
+			if(jobSchedule.get(i).previousJob!=null){
+				previousJobsTime=previousJobsTime+jobSchedule.get(i).getStartTime();
+			}
+			
+			//time for a job is previousJob's time+current job time.
+			timeForAJob=previousJobsTime+jobSchedule.get(i).time;
+			
+			//Any a jobs time is greater than others store the time as minimum time for the schedule to complete.
+			if(timeForAJob>minTime){
+				minTime=timeForAJob;
+			}
+		}
+		
+		return minTime;
+	}
+}
